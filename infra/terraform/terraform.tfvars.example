@@ -1,0 +1,6 @@
+subscription_id     = "replace-with-your-subscription-id"
+location             = "eastasia"
+resource_group_name  = "calculatris-rg"
+acr_name             = "replace-with-lowercase-unique-acr-name"
+aks_name             = "calculatris-aks"
+vm_size              = "Standard_B2ls_v2"

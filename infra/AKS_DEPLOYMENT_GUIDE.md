@@ -61,7 +61,7 @@ contain only lowercase letters and numbers. The Azure region must support the
 VM size selected in Terraform.
 
 ```bash
-export LOCATION=eastus
+export LOCATION=eastasia
 export RESOURCE_GROUP=calculatris-rg
 export ACR_NAME=calculatrisacr$RANDOM
 export AKS_NAME=calculatris-aks
@@ -190,7 +190,7 @@ variable "subscription_id" {
 variable "location" {
   type        = string
   description = "Azure region for all resources."
-  default     = "eastus"
+  default     = "eastasia"
 }
 
 variable "resource_group_name" {
@@ -212,8 +212,8 @@ variable "aks_name" {
 
 variable "vm_size" {
   type        = string
-  description = "Node VM size. Increase this if the Next.js build or cluster needs more capacity."
-  default     = "Standard_B2s"
+  description = "Node VM size. Standard_B2ls_v2 is the smallest practical size for this app in this subscription."
+  default     = "Standard_B2ls_v2"
 }
 ```
 
@@ -238,11 +238,11 @@ subscription or environment-specific values:
 
 ```hcl
 subscription_id     = "replace-with-your-subscription-id"
-location            = "eastus"
+location            = "eastasia"
 resource_group_name = "calculatris-rg"
 acr_name            = "replace-with-your-lowercase-unique-acr-name"
 aks_name            = "calculatris-aks"
-vm_size             = "Standard_B2s"
+vm_size             = "Standard_B2ls_v2"
 ```
 
 Add this to `infra/terraform/.gitignore`:
@@ -357,7 +357,8 @@ older image when `imagePullPolicy: IfNotPresent` is used.
 Create a namespace so this application is separated from other workloads:
 
 ```bash
-kubectl create namespace "$CLUSTER_NAMESPACE"
+kubectl create namespace "$CLUSTER_NAMESPACE" --dry-run=client -o yaml \
+  | kubectl apply -f -
 ```
 
 The existing backend manifests provide a private `ClusterIP` service, which is
@@ -389,6 +390,10 @@ production setup, deliver this value from Azure Key Vault as described below.
 Apply the frontend resources:
 
 ```bash
+kubectl -n "$CLUSTER_NAMESPACE" create secret generic frontend-secret \
+  --from-literal=APP_SECRET="$(openssl rand -hex 32)" \
+  --dry-run=client -o yaml | kubectl apply -f -
+
 kubectl apply -n "$CLUSTER_NAMESPACE" \
   -f frontend/k8s/configMap.yml \
   -f frontend/k8s/frontend-deployment.yml \

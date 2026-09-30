@@ -1,0 +1,9 @@
+
+# Terraform state, plans, variables, and local provider data
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+crash.log
+
